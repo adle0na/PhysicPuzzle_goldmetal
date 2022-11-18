@@ -7,10 +7,14 @@ using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
-    public Donggle lastDonggle;
+    public Donggle    lastDonggle;
     public GameObject dongglePrefab;
-    public Transform donggleGroup;
+    public Transform  donggleGroup;
+    public GameObject effectPrefab;
+    public Transform  effectGroup;
 
+    public int maxLevel;
+    
     private void Awake()
     {
         Application.targetFrameRate = 60;
@@ -23,16 +27,22 @@ public class GameManager : MonoBehaviour
 
     private Donggle GetDonggle()
     {
+        GameObject instantEffectObj = Instantiate(effectPrefab, effectGroup);
+        ParticleSystem instantEffect = instantEffectObj.GetComponent<ParticleSystem>();
+        
         GameObject instant = Instantiate(dongglePrefab, donggleGroup);
         Donggle instantDonggle = instant.GetComponent<Donggle>();
+        instantDonggle.effect = instantEffect;
+        
         return instantDonggle;
     }
 
     private void NextDonggle()
     {
         Donggle newDonggle = GetDonggle();
-        lastDonggle = newDonggle;
-        lastDonggle.level = Random.Range(0, 2);
+        lastDonggle         = newDonggle;
+        lastDonggle.manager = this;
+        lastDonggle.level   = Random.Range(0, maxLevel);
         lastDonggle.gameObject.SetActive(true);
         
         StartCoroutine("WaitNext");

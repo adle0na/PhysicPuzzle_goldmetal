@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -5,13 +6,16 @@ namespace Assets.Scripts
 {
     public class Donggle : MonoBehaviour
     {
-        public int level;
+        public GameManager manager;
+        public ParticleSystem effect;
+        
+        public int  level;
         public bool isDrag;
         public bool isMergy;
         
-        private Rigidbody2D _rigid;
+        private Rigidbody2D      _rigid;
         private CircleCollider2D _circle;
-        private Animator _anim;
+        private Animator         _anim;
         
         private void Awake()
         {
@@ -29,9 +33,9 @@ namespace Assets.Scripts
         {
             if(isDrag)
             {
-                Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                Vector3 mousePos  = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-                float leftBorder = -4.2f + transform.localScale.x / 2f;
+                float leftBorder  = -4.2f + transform.localScale.x / 2f;
                 float rightBorder = 4.2f - transform.localScale.x / 2f;
 
                 if (mousePos.x < leftBorder)
@@ -72,6 +76,8 @@ namespace Assets.Scripts
                     if (meY < otherY || (meY == otherY && meX > otherX))
                     {
                         other.Hide(transform.position);
+                        
+                        LevelUp();
                     }
                     // 같은 높이일 경우
                 }
@@ -102,6 +108,37 @@ namespace Assets.Scripts
 
             isMergy = false;
             gameObject.SetActive(false);
+        }
+
+        void LevelUp()
+        {
+            isMergy = true;
+
+            _rigid.velocity = Vector2.zero;
+            _rigid.angularVelocity = 0;
+
+            StartCoroutine(LevelUpRoutine());
+        }
+
+        IEnumerator LevelUpRoutine()
+        {
+            yield return new WaitForSeconds(0.2f);
+            
+            _anim.SetInteger("Level", level + 1);
+            EffectPlay();
+
+            yield return new WaitForSeconds(0.3f);
+            level++;
+
+            manager.maxLevel = Mathf.Max(level, manager.maxLevel);
+            isMergy = false;
+        }
+
+        void EffectPlay()
+        {
+            effect.transform.position = transform.position;
+            effect.transform.localScale = transform.localScale;
+            effect.Play();
         }
     }
 }
